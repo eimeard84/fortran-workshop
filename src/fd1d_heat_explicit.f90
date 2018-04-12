@@ -5,6 +5,7 @@ program fd1d_heat_explicit_prb
 
   integer, parameter :: T_NUM=201
   integer, parameter :: X_NUM=21
+  integer :: ierr
 
   character(len=120) :: msg
 
@@ -60,7 +61,7 @@ program fd1d_heat_explicit_prb
   x_min = 0.0e+00_dp
   x_max = 1.0e+00_dp
 ! x_num is the number of intervals in the x-direction
-  call r8vec_linspace(x_num, x_min, x_max, x)
+  call r8vec_linspace(x_min, x_max, x)
 
 ! the t-range values. integrate from t_min to t_max
   t_min = 0.0e+00_dp
@@ -68,7 +69,7 @@ program fd1d_heat_explicit_prb
 
 ! t_num is the number of intervals in the t-direction
   dt = (t_max-t_min)/real(t_num-1, kind=dp)
-  call r8vec_linspace(t_num, t_min, t_max, t)
+  call r8vec_linspace(t_min, t_max, t)
 
 ! get the CFL coefficient
   call fd1d_heat_explicit_cfl(k, t_num, t_min, t_max, x_num, x_min, x_max, &
@@ -98,7 +99,7 @@ program fd1d_heat_explicit_prb
 
 ! the main time integration loop 
   do j = 2, t_num
-    call fd1d_heat_explicit(x_num, x, t(j-1), dt, cfl, h, h_new)
+    call fd1d_heat_explicit(x, t(j-1), dt, cfl, h, h_new)
 
     do i = 1, x_num
       hmat(i, j) = h_new(i)
@@ -107,9 +108,9 @@ program fd1d_heat_explicit_prb
   end do
 
 ! write data to files
-  call r8mat_write('h_test01.txt', x_num, t_num, hmat)
-  call r8vec_write('t_test01.txt', t_num, t)
-  call r8vec_write('x_test01.txt', x_num, x)
+  call r8mat_write('h_test01.txt', hmat)
+  call r8vec_write('t_test01.txt', t)
+  call r8vec_write('x_test01.txt', x)
 
   deallocate( h, stat = ierr )
   deallocate( h_new, stat = ierr )
@@ -123,7 +124,7 @@ contains
     implicit none
 
     integer, intent(in) :: j
-    real (kind=dp), intent(out) :: d
+    real (kind=dp) :: d
     real (kind=dp), dimension(:), intent(in) :: x
 
     !> Why the FUCK does a function just return ZERO regardless of input? -EMD, 2018.04.12
@@ -164,10 +165,10 @@ contains
 
     implicit none
 
-    integer intent(in) :: x_num
-    integer intent(in) :: t_num
-    real (kind=dp), intent(in) :: dx
-    real (kind=dp), intent(in) :: dt
+    integer, intent(in) :: x_num
+    integer, intent(in) :: t_num
+    real (kind=dp) :: dx
+    real (kind=dp) :: dt
     real (kind=dp), intent(in) :: k
     real (kind=dp), intent(in) :: t_max
     real (kind=dp), intent(in) :: t_min
@@ -192,7 +193,7 @@ contains
     integer :: n
 
     integer :: j
-    character intent(in) (len=*) :: output_filename
+    character (len=*), intent(in) :: output_filename
     integer :: output_unit_id
     character (len=30) :: string
     real (kind=dp), dimension(:,:), intent(in) :: table
@@ -222,8 +223,8 @@ contains
     integer :: i
 
     do i = 1, size(a)
-      a(i) = (real(n-i,kind=dp)*a_first+real(i-1,kind=dp)*a_last)/ &
-        real(n-1, kind=dp)
+      a(i) = (real(size(a)-i,kind=dp)*a_first+real(i-1,kind=dp)*a_last)/ &
+        real(size(a)-1, kind=dp)
     end do
 
   end subroutine
@@ -235,7 +236,7 @@ contains
     integer :: m
 
     integer :: j
-    character intent(in) (len=*) :: output_filename
+    character (len=*), intent(in) :: output_filename
     integer :: output_unit_id
     real (kind=dp), dimension(:), intent(in) :: x
 
