@@ -1,5 +1,9 @@
 program fd1d_heat_explicit_prb
   use :: types_mod, only: dp
+  use :: rhs_mod
+  use :: cfl_mod
+  use :: io_mod
+  use :: solver_mod
 
   implicit none
 
@@ -118,136 +122,6 @@ program fd1d_heat_explicit_prb
   deallocate( t, stat = ierr )
   deallocate( x, stat = ierr )
 
-contains
-
-  function func(j, x) result (d)
-    implicit none
-
-    integer, intent(in) :: j
-    real (kind=dp) :: d
-    real (kind=dp), dimension(:), intent(in) :: x
-
-    !> Why the FUCK does a function just return ZERO regardless of input? -EMD, 2018.04.12
-    d = 0.0e+00_dp
-  end function
-
-  subroutine fd1d_heat_explicit(x, t, dt, cfl, h, h_new)
-    implicit none
-
-    real (kind=dp), intent(in) :: cfl
-    real (kind=dp), intent(in) :: dt
-    real (kind=dp), dimension(:), intent(in) :: h
-    real (kind=dp), dimension(:), intent(out) :: h_new
-    integer :: j
-    !> This variable isn't used. -EMD 2018.04.12 
-    real (kind=dp), intent(in) :: t
-    real (kind=dp), dimension(:), intent(in) :: x
-    real (kind=dp) :: f(size(x))
-
-    do j = 1, size(x)
-      f(j) = func(j, x)
-    end do
-
-    !> This is a really weird way of doing things - the boundary conditions are set before and after the loop? -EMD 2018.04.12
-    h_new(1) = 0.0e+00_dp
-
-    do j = 2, size(x) - 1
-      h_new(j) = h(j) + dt*f(j) + cfl*(h(j-1)-2.0e+00_dp*h(j)+h(j+1))
-    end do
-
-! set the boundary conditions again
-    h_new(1) = 90.0e+00_dp
-    h_new(size(x)) = 70.0e+00_dp
-  end subroutine
-
-  subroutine fd1d_heat_explicit_cfl(k, t_num, t_min, t_max, x_num, x_min, &
-    x_max, cfl)
-
-    implicit none
-
-    integer, intent(in) :: x_num
-    integer, intent(in) :: t_num
-    real (kind=dp) :: dx
-    real (kind=dp) :: dt
-    real (kind=dp), intent(in) :: k
-    real (kind=dp), intent(in) :: t_max
-    real (kind=dp), intent(in) :: t_min
-    real (kind=dp), intent(in) :: x_max
-    real (kind=dp), intent(in) :: x_min
-    real (kind=dp), intent(out) :: cfl
-
-    dx = (x_max-x_min)/real(x_num-1, kind=dp)
-    dt = (t_max-t_min)/real(t_num-1, kind=dp)
-
-    cfl = k*dt/dx/dx
-
-    write (*, '(a)') ' '
-    write (*, '(a,g14.6)') '  CFL stability criterion value = ', cfl
-
-  end subroutine
-
-  subroutine r8mat_write(output_filename, table)
-    implicit none
-
-    integer :: m
-    integer :: n
-
-    integer :: j
-    character (len=*), intent(in) :: output_filename
-    integer :: output_unit_id
-    character (len=30) :: string
-    real (kind=dp), dimension(:,:), intent(in) :: table
-
-    m = size( table(:,:), 1 )
-    n = size( table(:,:), 2 )
-
-    output_unit_id = 10
-    open (unit=output_unit_id, file=output_filename, status='replace')
-
-    write (string, '(a1,i8,a1,i8,a1,i8,a1)') '(', m, 'g', 24, '.', 16, ')'
-
-    do j = 1, n
-      write (output_unit_id, string) table(1:m, j)
-    end do
-
-    close (unit=output_unit_id)
-  end subroutine
-
-  subroutine r8vec_linspace(a_first, a_last, a)
-
-    implicit none
-
-    real (kind=dp), dimension(:), intent(out) :: a
-    real (kind=dp), intent(in) :: a_first
-    real (kind=dp), intent(in) :: a_last
-    integer :: i
-
-    do i = 1, size(a)
-      a(i) = (real(size(a)-i,kind=dp)*a_first+real(i-1,kind=dp)*a_last)/ &
-        real(size(a)-1, kind=dp)
-    end do
-
-  end subroutine
-
-  subroutine r8vec_write(output_filename, x)
-
-    implicit none
-
-    integer :: m
-
-    integer :: j
-    character (len=*), intent(in) :: output_filename
-    integer :: output_unit_id
-    real (kind=dp), dimension(:), intent(in) :: x
-
-    output_unit_id = 11
-    open (unit=output_unit_id, file=output_filename, status='replace')
-
-    do j = 1, size(x)
-      write (output_unit_id, '(2x,g24.16)') x(j)
-    end do
-
-    close (unit=output_unit_id)
-  end subroutine
+!contains
 
 end program
