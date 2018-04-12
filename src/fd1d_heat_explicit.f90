@@ -119,45 +119,44 @@ program fd1d_heat_explicit_prb
 
 contains
 
-  function func(j, x_num, x) result (d)
+  function func(j, x) result (d)
     implicit none
 
-    integer, intent(in) :: j, x_num
+    integer, intent(in) :: j
     real (kind=dp), intent(out) :: d
-    real (kind=dp), intent(in) :: x(x_num)
+    real (kind=dp), dimension(:), intent(in) :: x
 
+    !> Why the FUCK does a function just return ZERO regardless of input? -EMD, 2018.04.12
     d = 0.0e+00_dp
   end function
 
-  subroutine fd1d_heat_explicit(x_num, x, t, dt, cfl, h, h_new)
+  subroutine fd1d_heat_explicit(x, t, dt, cfl, h, h_new)
     implicit none
 
-    integer intent(in) :: x_num
-
-    real intent(in) (kind=dp) :: cfl
-    real intent(in) (kind=dp) :: dt
-    real intent(in) (kind=dp) :: h(x_num)
-    real intent(out) (kind=dp) :: h_new(x_num)
+    real (kind=dp), intent(in) :: cfl
+    real (kind=dp), intent(in) :: dt
+    real (kind=dp), dimension(:), intent(in) :: h
+    real (kind=dp), dimension(:), intent(out) :: h_new
     integer :: j
     !> This variable isn't used. -EMD 2018.04.12 
-    real intent(in) (kind=dp) :: t
-    real intent(in) (kind=dp) :: x(x_num)
-    real (kind=dp) :: f(x_num)
+    real (kind=dp), intent(in) :: t
+    real (kind=dp), dimension(:), intent(in) :: x
+    real (kind=dp) :: f(size(x))
 
-    do j = 1, x_num
-      f(j) = func(j, x_num, x)
+    do j = 1, size(x)
+      f(j) = func(j, x)
     end do
 
     !> This is a really weird way of doing things - the boundary conditions are set before and after the loop? -EMD 2018.04.12
     h_new(1) = 0.0e+00_dp
 
-    do j = 2, x_num - 1
+    do j = 2, size(x) - 1
       h_new(j) = h(j) + dt*f(j) + cfl*(h(j-1)-2.0e+00_dp*h(j)+h(j+1))
     end do
 
 ! set the boundary conditions again
     h_new(1) = 90.0e+00_dp
-    h_new(x_num) = 70.0e+00_dp
+    h_new(size(x)) = 70.0e+00_dp
   end subroutine
 
   subroutine fd1d_heat_explicit_cfl(k, t_num, t_min, t_max, x_num, x_min, &
@@ -167,14 +166,14 @@ contains
 
     integer intent(in) :: x_num
     integer intent(in) :: t_num
-    real intent(in) (kind=dp) :: dx
-    real intent(in) (kind=dp) :: dt
-    real intent(in) (kind=dp) :: k
-    real intent(in) (kind=dp) :: t_max
-    real intent(in) (kind=dp) :: t_min
-    real intent(in) (kind=dp) :: x_max
-    real intent(in) (kind=dp) :: x_min
-    real intent(out) (kind=dp) :: cfl
+    real (kind=dp), intent(in) :: dx
+    real (kind=dp), intent(in) :: dt
+    real (kind=dp), intent(in) :: k
+    real (kind=dp), intent(in) :: t_max
+    real (kind=dp), intent(in) :: t_min
+    real (kind=dp), intent(in) :: x_max
+    real (kind=dp), intent(in) :: x_min
+    real (kind=dp), intent(out) :: cfl
 
     dx = (x_max-x_min)/real(x_num-1, kind=dp)
     dt = (t_max-t_min)/real(t_num-1, kind=dp)
@@ -186,17 +185,20 @@ contains
 
   end subroutine
 
-  subroutine r8mat_write(output_filename, m, n, table)
+  subroutine r8mat_write(output_filename, table)
     implicit none
 
-    integer intent(in) :: m
-    integer intent(in) :: n
+    integer :: m
+    integer :: n
 
     integer :: j
     character intent(in) (len=*) :: output_filename
     integer :: output_unit_id
     character (len=30) :: string
-    real intent(in) (kind=dp) :: table(m, n)
+    real (kind=dp), dimension(:,:), intent(in) :: table
+
+    m = size( table(:,:), 1 )
+    n = size( table(:,:), 2 )
 
     output_unit_id = 10
     open (unit=output_unit_id, file=output_filename, status='replace')
@@ -210,39 +212,37 @@ contains
     close (unit=output_unit_id)
   end subroutine
 
-  subroutine r8vec_linspace(n, a_first, a_last, a)
+  subroutine r8vec_linspace(a_first, a_last, a)
 
     implicit none
 
-    integer intent(in) :: n
-    real intent(out) (kind=dp) :: a(n)
-    real intent(in) (kind=dp) :: a_first
-    real intent(in) (kind=dp) :: a_last
+    real (kind=dp), dimension(:), intent(out) :: a
+    real (kind=dp), intent(in) :: a_first
+    real (kind=dp), intent(in) :: a_last
     integer :: i
 
-    do i = 1, n
+    do i = 1, size(a)
       a(i) = (real(n-i,kind=dp)*a_first+real(i-1,kind=dp)*a_last)/ &
         real(n-1, kind=dp)
     end do
 
   end subroutine
 
-  subroutine r8vec_write(output_filename, n, x)
+  subroutine r8vec_write(output_filename, x)
 
     implicit none
 
     integer :: m
-    integer intent(in) :: n
 
     integer :: j
     character intent(in) (len=*) :: output_filename
     integer :: output_unit_id
-    reali intent(in) (kind=dp) :: x(n)
+    real (kind=dp), dimension(:), intent(in) :: x
 
     output_unit_id = 11
     open (unit=output_unit_id, file=output_filename, status='replace')
 
-    do j = 1, n
+    do j = 1, size(x)
       write (output_unit_id, '(2x,g24.16)') x(j)
     end do
 
