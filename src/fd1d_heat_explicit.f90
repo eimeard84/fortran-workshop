@@ -6,6 +6,8 @@ program fd1d_heat_explicit_prb
   integer, parameter :: T_NUM=201
   integer, parameter :: X_NUM=21
 
+  character(len=120) :: msg
+
   real (kind=dp) :: cfl
   real (kind=dp) :: dt
   real (kind=dp), dimension(:), allocatable :: h
@@ -42,6 +44,14 @@ program fd1d_heat_explicit_prb
   write (*, '(a)') '    dH/dt - K * d2H/dx2 = f(x,t)'
   write (*, '(a)') ' '
   write (*, '(a)') '  Run a simple test case.'
+
+  !> "Check the status of the dynamic memory allocation" means
+  !> "include the stat = ierr, errmsg = msg bits". -EMD 2018.04.12
+  allocate( h(1:X_NUM), stat = ierr, errmsg = msg )
+  allocate( h_new(1:X_NUM), stat = ierr, errmsg = msg )
+  allocate( x(1:X_NUM), stat = ierr, errmsg = msg )
+  allocate( t(1:T_NUM), stat = ierr, errmsg = msg )
+  allocate( hmat(1:X_NUM,1:T_NUM), stat = ierr, errmsg = msg )
 
 ! heat coefficient
   k = 0.002e+00_dp
@@ -101,6 +111,12 @@ program fd1d_heat_explicit_prb
   call r8vec_write('t_test01.txt', t_num, t)
   call r8vec_write('x_test01.txt', x_num, x)
 
+  deallocate( h, stat = ierr )
+  deallocate( h_new, stat = ierr )
+  deallocate( hmat, stat = ierr )
+  deallocate( t, stat = ierr )
+  deallocate( x, stat = ierr )
+
 contains
 
   function func(j, x_num, x) result (d)
@@ -123,7 +139,7 @@ contains
     real intent(in) (kind=dp) :: h(x_num)
     real intent(out) (kind=dp) :: h_new(x_num)
     integer :: j
-    !> This variable isn't used. -EMD 
+    !> This variable isn't used. -EMD 2018.04.12 
     real intent(in) (kind=dp) :: t
     real intent(in) (kind=dp) :: x(x_num)
     real (kind=dp) :: f(x_num)
@@ -132,7 +148,7 @@ contains
       f(j) = func(j, x_num, x)
     end do
 
-    !> This is a really weird way of doing things - the boundary conditions are set before and after the loop? -EMD
+    !> This is a really weird way of doing things - the boundary conditions are set before and after the loop? -EMD 2018.04.12
     h_new(1) = 0.0e+00_dp
 
     do j = 2, x_num - 1
