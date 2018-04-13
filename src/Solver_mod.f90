@@ -1,6 +1,6 @@
 module Solver_mod
-  use :: types_mod, only: dp
-  use :: rhs_mod, only: func
+  use types_mod, only: dp
+  use rhs_mod, only: func
 
   implicit none
   ! everything is private unless otherwise stated
@@ -30,6 +30,8 @@ module Solver_mod
     h_new(1) = 0.0e+00_dp
 
     do j = 2, size(x) - 1
+      != stencil readOnce, (reflexive(dim=1)) :: f 
+      != stencil (centered(depth=1, dim=1)) :: h 
       h_new(j) = h(j) + dt*f(j) + cfl*(h(j-1)-2.0e+00_dp*h(j)+h(j+1))
     end do
 
