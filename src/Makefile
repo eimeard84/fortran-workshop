@@ -1,5 +1,5 @@
-INCLUDE=-I/usr/local/netcdf-4.6.1/include
-LIBS=-L/usr/local/netcdf-4.6.1/lib -lnetcdff -lnetcdf
+INCLUDE=-I/usr/local/netcdf-4.6.1/include -I/usr/local/plplot-5.13.0/lib/fortran/modules/plplot
+LIBS=-L/usr/local/netcdf-4.6.1/lib -lnetcdff -lnetcdf -L/usr/local/plplot-5.13.0/lib -lplplotfortran -lplplot
 
 main.exe : fd1d_heat_explicit.o libfmw.a 
 	nagfor $< -L. -lfmw ${LIBS} -o $@
@@ -17,6 +17,12 @@ Solver_mod.o : Solver_mod.f90 RHS_mod.o Types_mod.o
 	nagfor -c -I. $<
 Types_mod.o : Types_mod.f90
 	nagfor -c $<
+movie : 
+	ffmpeg -f image2 -i image%*.png fd1d_heat_explicit.mp4
+nccheck : 
+	ncdiff --overwrite h_test01.nc h_test01.nc.valid -o diff.nc
+	ncwa -y max --overwrite diff.nc out.nc
+	ncdump out.nc | grep "solution ="
 
 .PHONY: clean
 
