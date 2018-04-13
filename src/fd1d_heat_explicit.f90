@@ -8,6 +8,7 @@ program fd1d_heat_explicit_prb
   use :: cfl_mod
   use :: io_mod
   use :: solver_mod
+  use :: plplot
 
   implicit none
 
@@ -16,6 +17,7 @@ program fd1d_heat_explicit_prb
   integer :: ierr
 
   character(len=120) :: msg
+  character(len=12) :: pngname
 
   real (kind=dp) :: cfl
   real (kind=dp) :: dt
@@ -107,6 +109,17 @@ program fd1d_heat_explicit_prb
 
 ! the main time integration loop 
   do j = 2, t_num
+    if ( mod( j, 10 ) == 0 ) then
+    write( pngname, "( A5, I0.3, A4 )" ) "image", j, ".png"
+
+    call PLSFNAM(pngname)
+    call PLSDEV( 'pngcairo' )
+    call PLINIT()
+    call PLENV(minval(x),maxval(x),minval(h),maxval(h),0,1)
+    call PLLAB("Length","Temperature","Solution of 1-D heat equation")
+    call PLLINE(x, h)
+    call PLEND()
+    end if
     call fd1d_heat_explicit(x, t(j-1), dt, cfl, h, h_new)
 
     do i = 1, x_num
