@@ -5,4 +5,6 @@
 *.dat
 *.a
 *.mp4
+*.png
+*.tmp
 doc/

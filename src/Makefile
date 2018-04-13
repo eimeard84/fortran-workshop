@@ -23,6 +23,11 @@ nccheck :
 	ncdiff --overwrite h_test01.nc h_test01.nc.valid -o diff.nc
 	ncwa -y max --overwrite diff.nc out.nc
 	ncdump out.nc | grep "solution ="
+unitcheck : 
+	${PFUNIT}/bin/pFUnitParser.py testCFL.pf testCFL.F90 -I.
+	nagfor -I${PFUNIT}/mod -I. -c testCFL.F90
+	nagfor -I${PFUNIT}/mod ${PFUNIT}/include/driver.F90 CFL_mod.o testCFL.o -L${PFUNIT}/lib -lpfunit -I. -o tests.exe
+	./tests.exe
 
 .PHONY: clean
 
