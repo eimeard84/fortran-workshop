@@ -1,24 +1,24 @@
-project: 
-src_dir: 
-output_dir: 
-summary: 
-author: 
+project: 1D Heat Equation 
+src_dir: ./src
+output_dir: ./doc
+summary: Fortran Workshop
+author: Eimear Dunne
 author_description: Fortran workshop attendee
 email: 
 linkedin: 
-docmark: 
-predocmark: 
+docmark: !
+predocmark: > 
 media_dir: ./media
 docmark_alt: #
 predocmark_alt: <
-display:
-source: 
-graph: 
-coloured_edges:
-search: 
+display: public
+source: true
+graph: true
+coloured_edges: true
+search: true
 warn: false
 license: by-nc
-version: 
+version: 1.1.1
 
 This is the solution for the [Fortran Modernisation Workshop](https://www.nag.co.uk/content/fortran-modernization-workshop).
 The workshop exercise solves. 
@@ -31,5 +31,8 @@ This is a series of Fortran workshops to help computational scientists write
 efficient and portable code, and to encourage best practices in software
 engineering.
 
+It has a function that returns zero regardless of input arguments, but it's 
+just to teach us what we're doing so that's okay. 
+
 @Bug
-If you find any bugs, please email [me](mailto:wadud.miah@nag.co.uk)
+Like, the function that just returns zero. And a few unused variables. 
