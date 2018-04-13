@@ -116,9 +116,10 @@ program fd1d_heat_explicit_prb
   end do
 
 ! write data to files
-  call r8mat_write('h_test01.txt', hmat)
-  call r8vec_write('t_test01.txt', t)
-  call r8vec_write('x_test01.txt', x)
+  call r8mat_write('h_test01.nc', hmat, x, t)
+! No longer necessary as things are being written to NetCDF
+!  call r8vec_write('t_test01.txt', t)
+!  call r8vec_write('x_test01.txt', x)
 
   deallocate( h, stat = ierr )
   deallocate( h_new, stat = ierr )
